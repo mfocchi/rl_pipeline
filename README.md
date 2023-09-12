@@ -1,4 +1,4 @@
-# Sustainable RL
+# Sustainable RL TODO ADD dependencies
 
  Michele Focchi, Andrea Del Prete,
 
@@ -173,6 +173,22 @@ sudo apt install Python3-pip
 ```
 
 
+
+
+
+
+
+numpy==1.17.4
+
+joblib==1.2.0
+
+torch==2.0.0
+
+torchvision==0.15.1
+
+tensorboard==2.11.0
+
+change LOCOSIMDIR to jumpleg_rl
 
 ### Download code and setup ROS workspace
 
