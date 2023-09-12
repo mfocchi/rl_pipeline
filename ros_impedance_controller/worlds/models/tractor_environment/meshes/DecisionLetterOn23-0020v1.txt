@@ -1,0 +1,82 @@
+Dear Mr. Yu-Ming Chen,
+
+Your paper 
+
+23-0020 
+"Beyond Inverted Pendulums: Task-optimal Simple Models of Legged
+Locomotion"
+by Yu-Ming Chen, Jianshu Hu, Michael Posa
+Evolved Paper
+
+submitted to the IEEE Transactions on Robotics (T-RO) has been reviewed
+by the Associate Editor and selected Reviewers. The reviews of the
+paper are attached.
+
+On the basis of the reviewers' ratings and comments, we regret to
+inform you that your paper in the present form cannot be published in
+the Transactions. However, you are encouraged to submit a revised
+version of your work addressing the reviewers concerns. The revised
+paper will be handled as a new submission that will be reviewed
+accordingly while keeping track of the previous review material.
+
+The paper proposes a method to automatically optimize reduced order
+models (ROM) to be used for planning and model predictive control.
+Extensive analysis and experiments are conducted to study a specific
+type of reduced order model related to the linear inverted pendulum
+model for locomotion. Experiments on the biped Cassie illustrate the
+applicability of the approach. All reviewers and the associate editor
+agree that the paper is well-written, addresses an important problem
+and is technically sound. However in its current form, the paper raised
+important concern from all the reviewers. It is recommended to address
+all of them and particularly focus on the following issues:
+
+- the choice of evaluation does not clearly demonstrate the benefits of
+the approach. Indeed, performance cost decrease from an optimized ROM
+does not seem to lead to a visible change in behavior and the overall
+benefit of the approach is not completely clear. Even the increase in
+the range of walk behavior (Fig 6 and 11) seem rather modest. As the
+reviewers suggest, choosing different tasks apart from straight flat
+ground walking might help highlight the benefit of the approach (at
+least in simulation). For example, in the video, the difference between
+the robot walking using the LIP model and the optimized ROM was not
+directly visible to the associate editor. Is there a task in which a
+behavioral difference would be visible? Is there a visible change in
+ground reaction forces that could be highlighted?
+
+- the use of the envelope theorem enables an elegant solution to the
+bi-level optimization problem. It might be worth spending more time
+discussing this aspect, e.g. remind readers about the envelop theorem
+and clearly state the assumptions, such as continuity of the value
+function, etc. How do these assumptions affect the applicability of the
+approach? What about convergence behavior?
+
+- the simulation/experimental sections are quite long and the authors
+could consider making these sections more concise to leave more space
+to address the reviewers concerns.
+
+Additionally, the associate editor has the following (minor) question:
+- A key benefit of ROM for MPC is to ensure linearity in the dynamic
+model to retain a convex optimization problem and enable fast
+optimization. A discussion on the impact of the approach on the
+resulting MPC problem might be helpful. Would it be recommended to
+restrict ROMs to linear models for MPC? How would this compare to
+linearizing the dynamics and using for example PCA to extract a
+low-dimensional ROM? (e.g. the approach of Yamane Humanoids 2012
+“Systematic Derivation of Simplified Dynamics for Humanoid Robots”).
+
+If you decide to resubmit, please consult the T-RO website
+http://www.ieee-ras.org/publications/t-ro for instructions on
+electronic resubmission. The revised manuscript should be formatted so
+that any changes can be easily identified by the reviewers, by using,
+e.g., colored or bold text to indicate revised passages. In addition to
+the largely revised version of your paper, you should upload also a
+single pdf file containing your reply to the reviewers' comments and
+the list of changes made in the paper. 
+
+If you have any related concern, do not hesitate to contact me.
+
+Sincerely,
+
+Eiichi Yoshida
+Editor
+IEEE Transactions on Robotics

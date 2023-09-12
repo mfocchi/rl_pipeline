@@ -1,0 +1,139 @@
+The paper presents an algorithm to optimize and synthesize
+reduced-order models for the locomotion of legged robots that are
+optimal w.r.t a specific user-specified cost function. The algorithm
+consists of a bilevel optimization to optimize the parameters of the
+reduced-order model by solving a batch of inner-loop optimizations to
+perform different tasks.
+In their setting, they both plan for com trajectories and foothold
+locations and rely on optimizing foothold locations to regulate the
+underactuated degrees of freedom of the robot. 
+Using an optimized ROM seems to produce trajectories that require
+overall lower joint torques, removing unnecessary accelerations. 
+The reviewer very much appreciated the fact that the authors made the
+code available for reproducibility. 
+The paper is very well written, interesting and the scientific approach
+is convincing. I think it can represent a valuable contribution to the
+field. The solution to exploit the Envelope Theorem to compute the
+gradient of the outer-level objective without differentiating the
+solution of the inner-level optimization with respect to the parameters
+is an elengant and a very interesting outcome. 
+I liked a lot the author's effort to undertake a detailed performance
+evaluation and a reasoned result discussion.
+However,  as far as I can see, some weak points undermine the
+contribution of the paper, which I  list in the following.
+
+* The advantage in the performances of using the optimized ROM w.r.t to
+the standard LIP is not so apparent in experimental results and
+simulations. In particular, it seems that the range of tasks against
+which the reduced models are optimized, are mainly walking tasks on
+flat terrain
+with some variations in the stride length and the pelvis height. The
+video shows that the motion in TO/ optimized ROM /LIP is very similar,
+with forward /backward steps.
+The authors clearly stated that the advantage is in terms of ground
+reaction forces and smoother accelerations of the com that result in 
+smaller joint torques, hence lower energy consumption. However, the
+improvement seems to be very moderate (around the order of 10%-15%).
+On the other hand, it seems there is an improvement in the size of what
+they call the "task space" (I would rather call it the	Viable
+Operating Region). It would be interesting to see template tasks in
+which the optimized ROM really makes the difference in terms of
+"motion". For instance an environment where there are some pallets of
+different height  the robot has to climb up and down. In that case  I
+would expect that the ROM would perform very differently from the LIP
+because it goes beyond the constant height assumption. 
+Some random lateral steps are taken in the experimental tests, but in
+that case, I wonder how could the costs be compared in the optimized
+and not optimized case (see detailed comments) if the user input
+commands were different.  
+
+* if the model optimization is initialized with a LIP model, in a
+gradient descent setting, I have the feeling that the optimization
+won't be encouraged to explore and discover reduced models that are
+very different from LIP. More comments about this are welcome.
+ 
+* the paper is sometimes a bit heavy to read, especially in section VI.
+The optimization including pre-post full-order states seems to make 
+the approach overly complex and makes questionable
+the advantages also in terms of computational time (the MPC version
+could not be implemented on the real robot). 
+I think that improving (or even removing) this section could make the
+paper more readable (at the price of a lower generality in case is
+removed). Additionally, there are many variables to keep track of, 
+the presence a glossary section might help. 
+
+Apart from the above comments, the manuscript quality is  high, 
+hereafter  I report a few detailed comments that could improve the
+paper. 
+
+Section II
+- (4) explain the advantage of using the trapezoidal rule to compute
+the running cost
+- it is not very clear why the time intervals are included as
+optimization variables; this increases a lot the dimension of the
+problem 
+and may introduce many issues. No comments are given on that choice,
+nor a constraint on the total time, or bounds are introduced. 
+- is the constraint of the kinematic loop in the 4-bar-linkage included
+in fc?
+
+Section III.C
+- "the formulation of the dynamics and holonomic constraints...": As
+far as i understood there are two different jacobians in these
+equations: the contact jacobian and the derivative of the embedding
+function r. In the gc equation you use the same name J as in the
+dynamics, I would give different names to discriminate them.
+
+Section III.E
+- this section should be improved, it is a bit cryptic to understand.
+What a 4D task space means? (mixed frontal lateral speed + different
+heights +?), for Monomial order 4, with which cost? define what
+"harder" task means. Also, the "task range" term is introduced without
+definition (even if it somewhat explained later).
+ 
+Section III.D
+- "optimize the averaged sample cost over the model parameters": what
+if a task has (on average) a higher cost because it involves higher 
+accelerations? the ROM would be biased toward that task to favour it
+w.r.t other tasks? More comments are needed about this issue. 
+
+Section IV
+- "After a reduced order model is optimized, we use it on the robot to
+achieve desired tasks":  I think it is worth to declare early on how
+the task distribution is created (e.g. varying which parameters).
+- in Fig 5 you talk about regularization trajectories, how are they
+obtained?
+- eq 12: it is not clear where the -1 sign come from, isn't the robot
+conventionally meant to advance forward with stepping?
+- eq 13: is Z^d  a fixed goal location or is moving with the user
+desired speed?
+- "This demonstrates that the use of ROM greatly reduces planning
+speed": this sentence is not clear, could you explain more? did you
+mean planning time?
+-  Table II:  how  the swing leg hip yaw /toe joints reference are
+obtained ? You say somewhat later in Section VI "..the desired
+trajectories for joints such as swing hip yaw and swing toe joint..."
+but before there is no mention about that, just a sentence "swing foot
+trajectories from Tfp with cubic splines." the reader should infer that
+you are getting these joint references	from the foot spline
+trajectories (e.g. from inverse kinematics?)  I think it is worth to
+clarify this early on. 
+
+Section V
+- "but we have not seen the performance for out-of-distribution
+tasks.": what this has to do with the fact that you do a TO with the
+simplified model of Cassie? It does not seem related. 
+- Fig 6: use same X axes scale for better comparison. The pictures are
+effective in conveying the message the authors intend to transmit.
+However, it would be interesting to see the plot of the operating
+regions also for lateral stepping.  
+- Fig 7: I think you should set the same pattern of velocity references
+to be able to compare the costs; in the video, I saw different velocity
+patterns were set for the optimized /non-optimized ROM	
+- "On hardware, the performance improvement is close to 10% for walking
+in place.": wasn't the robot performing omnidirectional walk in
+experiments?
+
+Section VI
+- "represents the hybrid guard S and the impact mapping &#8710;" : add
+a citation

@@ -1,0 +1,120 @@
+How I understand the paper:
+
+The paper „Beyond Inverted Pendulums: Task-optimal Simple
+Models of Legged Locomotion“ builds up on prior work utilizing bilevel
+optimization to improve the dynamics of a reduced-order representation
+of a legged robot. In particular, the computation of the inner-level
+gradients is improved, an MPC scheme for the reduced-order embedding is
+proposed and the application to the bipedal robot Cassie is enlarged.
+For Cassie, different reduced-order models are compared in simulation
+and on the robot.
+
+
+Major comments:
+
+The paper follows up on an intriguing control methodology which I
+believe is a significant contribution to the field of control and
+legged robots. Furthermore, the experimental results are highly
+impressive and demonstrate the potential of this approach.
+My major critique lies in the presentation of the paper. While the
+abstract puts the model optimization approach as the core and center of
+the paper with an application to Cassie, the remainder talks rather
+briefly about theoretical details. Instead there is an in-depth
+discussion about application specific empirical results (pages 9-15).
+While the experimental data is very impressive and important for the
+application part of the paper, my suggestion is to make this part
+(pages 9-15) more concise and elaborate on the theory section.
+Hopefully, some of the following major comments can be addressed in a
+revised version:
+
+While the ROMs dynamics are automatically tuned by the optimizer, the
+topology (DOFs) of the ROM are still user-defined (handcrafted). Please
+clarify this limitation in the beginning of the paper. In this context,
+a discussion about variable ROM topology and its implication (mixed
+integer programming) may be helpful.
+
+The envelope theorem (Lemma 1) is listed as a main contribution of the
+paper. It appears to be a smart way to compute the gradient for the
+outer-level optimization, since the theorem’s result is not affected by
+a change in the active set of constraints. Some more details besides
+Lemma 1 would be helpful. My suggestion is to explicitly transform eq.
+(TO) into a Lagrangian before using the KKT condition and the statement
+of Lemma 1. Also, how do error tolerances in the TO affect the quality
+of this gradient?
+
+The paper’s discussion is also mainly centered around applying MPC to
+Cassie and is missing a thorough discussion of Section III.
+- How about the convergence of Algorithm 1? What’s the user-defined
+tolerance/threshold for convergence? Can it be set systematically?
+- Is there some more insight into the choice of basis functions? How do
+they affect MPC performance? Also, some properties like
+differentiability should be discussed in more detail.
+- How about different objective functions in the inner-level
+optimization? For example, mixing examples 1 and 3 of Table 1. This
+probably includes a discussion about Pareto optimality.
+- And lastly, how about applying this methodology to other legged
+systems besides bipeds, e.g. quadrupeds?
+
+
+Minor Comments:
+
+Remarks on notation and representation:
+
+In various places of the paper the phrase “zero impacts”, “zero foot
+touchdown impact” or “no impact” is used without definition. It is only
+clarified in footnote 9 of page 13. Please clarifiy that velocity
+remains continuous when a foot touches down.
+
+All figures appear to be raster graphics (pixelated images). Most of
+them can be replaced by vector graphics, which will improve the overall
+quality of the paper.
+
+For consistency, write out all function arguments in eq. (1), e.g. M(q)
+instead of M.
+
+Eq. (2) is not consistent. Lambda is missing in the continuous dynamics
+(see eq. (1) and eq. (3)) but it appears in the discrete dynamics.
+Also, the holonomic constraints must be stated explicitly in this case.
+Another possibility is to state the hybrid dynamics in minimal
+coordinates [2] or write lambda as a function of x, i.e., holonomic
+constraints are resolved on acceleration level (DAE index reduction).
+After eq. (3), also explicitly state that holonomic constraints are
+represented within the inequality C<=0 in eq. (3).
+
+On page 4 it says: “Our definition is a broader definition of ROM, …”.
+Please elaborate on how this is a broader definition. It seems like
+comparing dynamics in minimal coordinates to dynamics defined in a
+larger space on a constrained manifold. To me the second is more
+general since we also have information about the ambient space of the
+dynamics. In particular, when computing impact/discrete maps, this
+representation might be more beneficial. 
+On the other hand, using minimal coordinates will be in general more
+computational efficient and accurate.
+
+Section III.B is copied from the conference version. However, to
+improve readability, consider adjusting eq. (8) and in particular eq.
+(O) to draw a stronger connection to the bilevel optimization
+discussion in eq. (5).
+
+In the set of equations at the end of Section III.C, the symbol $J_i$
+is undefined. Is it defined by $\dot{y}_i = J_i v_i$? Also, as before,
+the last dynamics equation with $\dot{v}_i = …$ should also indicate
+that $M$, $B$, $J$, … change with $i$.
+
+When searching for energetic gaits within the task space (Table 1), it
+seems very restrictive to define average speed implicitly by a fixed
+stride duration and length. Why is the stride duration not kept as a
+free or varying variable? Average speed on a given slope can then also
+be imposed as an explicit constraint.
+
+In Appendix A it is not clear what is meant by “a good optimal
+solution” or “more optimal solution”. How can one solution be “more
+optimal” than another? Is the question how to find a good seed to
+initialize the TO or to have (fast) convergence to an optimal solution
+within user-defined tolerance limits?
+
+Most points discussed in Appendix A are already known tweaks to
+implement TOs more successfully [48]. If there appears to be a conflict
+with the page limitation, I suggest to condense or remove this part.
+
+Attached to this review is an incomplete list of typos.
