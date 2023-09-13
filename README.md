@@ -5,7 +5,7 @@ Riccardo Bussola, Michele Focchi,  Andrea Del Prete, Daniele Fontanelli, Luigi P
 Corresponding author's email: Riccardo Bussola
 
 This repository is a reduced version of [Locosim](https://github.com/mfocchi/locosim) ([preprint](https://arxiv.org/abs/2305.02107)) and it is intended for reproducing simulations and experiments
-presented in the manuscript 
+presented in the manuscript  https://arxiv.org/submit/5111889
 
 
 
@@ -227,7 +227,7 @@ cd ~/ros_ws/
 Now you can clone the repository inside the ROS workspace you just created:
 
 ```
-git clone https://github.com/mfocchi/jump_rl.git
+git clone https://github.com/mfocchi/rl_pipeline.git
 ```
 
 now recompile again (then this step won't bee needed anymore if you just work in Python unless you do not modify / create additional ROS packages)
@@ -264,7 +264,7 @@ copy the following lines (at the end of the .bashrc), remember to replace the st
 source /opt/ros/ROS_VERSION/setup.bash
 source $HOME/ros_ws/install/setup.bash
 export PATH=/opt/openrobots/bin:$PATH
-export LOCOSIM_DIR=$HOME/ros_ws/src/jump_rl
+export LOCOSIM_DIR=$HOME/ros_ws/src/rl_pipeline
 export PYTHONPATH=/opt/openrobots/lib/pythonPYTHON_VERSION/site-packages:$PYTHONPATH
 export PYTHONPATH=$LOCOSIM_DIR/robot_control:$PYTHONPATH
 export PYTHONPATH=$LOCOSIM_DIR/landing_controller:$PYTHONPATH
