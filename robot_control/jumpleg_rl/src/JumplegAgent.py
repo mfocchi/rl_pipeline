@@ -75,9 +75,6 @@ class JumplegAgent:
         self.min_phi_d = np.pi/6.
 
         # Domain of targetCoM
-        # self.exp_rho = [-np.pi, np.pi]
-        # self.exp_z = [0.25, 0.45]
-        # self.exp_r = [0.37, 0.55]
         self.exp_rho = [-np.pi, np.pi]
         self.exp_z = [0.25, 0.5]
         self.exp_r = [0., 0.65]
@@ -106,7 +103,6 @@ class JumplegAgent:
 
         # restore train
         if self.restore_train:
-            # del self.replayBuffer
             self.replayBuffer = joblib.load(os.path.join(
                 self.main_folder, 'ReplayBuffer_train.joblib'))
             self.iteration_counter = self.replayBuffer.get_number_episodes()

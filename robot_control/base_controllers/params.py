@@ -37,7 +37,8 @@ robot_params['jumpleg'] ={'dt': 0.001,
                        'spawn_z' : 0.0,
                        'buffer_size': 1000} # note the frames are all aligned with base for joints = 0
 
+
 verbose = False
-plotting = False
+plotting = True
 
 

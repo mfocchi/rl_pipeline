@@ -1,24 +1,21 @@
-# Sustainable RL TODO ADD dependencies
+# Efficient Reinforcement Learning for Jumping Monopods
 
- Michele Focchi, Andrea Del Prete,
+Riccardo Bussola, Michele Focchi,  Andrea Del Prete, Daniele Fontanelli, Luigi Palopoli
 
 Corresponding author's email: Riccardo Bussola
 
-<p align="center">
-    <img src="./media/ex_square.png" alt="drawing" height="280"/> <img src="./media/example2.GIF" alt="drawing" height="280"/>
-</p>
-This repository is a reduced version of [Locosim](https://github.com/mfocchi/locosim) 
-([preprint](https://arxiv.org/abs/2305.02107)) and it is intended for reproducing simulations and experiments
-presented in the manuscript PUT ARXIV
+This repository is a reduced version of [Locosim](https://github.com/mfocchi/locosim) ([preprint](https://arxiv.org/abs/2305.02107)) and it is intended for reproducing simulations and experiments
+presented in the manuscript 
 
-The  Sustainable RL addresses the problem of omnidirectional jumping  for a monopod robot.
-.
 
-Check out our Youtube [video](https://youtu.be/wiuedeHfSEY).
 
-<p align="center">
-<img src="./media/video_front.gif" alt="drawing" width="30%"/> <img src="./media/video_back.gif" alt="drawing" width="30%"/> <img src="./media/video_left.gif" alt="drawing" width="30%"/>
-</p>
+In this work we consider the complex problem of making a monopod perform an omni-directional jump on uneven terrain. We guide the learning process within an RL framework by injecting physical knowledge. This expedient brings to widespread benefits, such as a drastic reduction of the learning
+time, and the ability to learn and compensate for possible errors in the low-level controller executing the motion. 
+
+Check out our Youtube [video](https://www.dropbox.com/scl/fi/89hv8cfsrqd3nyx34p9kd/bussola23icra.mp4?rlkey=qzl1asgna4aagohieviqxdwc4&dl=0).
+
+
+
 
 ## Install Locosim
 
@@ -30,15 +27,14 @@ Python ros node (where the controller is written) to a Gazebo simulator.
 Locosim is compatible with Ubuntu 16/18/20. The installation instructions have been generalized accordingly. 
 You need replace few strings with the appropriate values according to your operating systems as follows:
 
-| **Ubuntu 16**:               | Ubuntu 18:                   | **Ubuntu 20**:               |
-| ---------------------------- | ---------------------------- | ---------------------------- |
-| PYTHON_PREFIX = Python       | PYTHON_PREFIX = Python3      | PYTHON_PREFIX = Python3      |
-| PYTHON_VERSION = 2.7         | PYTHON_VERSION = 3.5         | PYTHON_VERSION = 3.8         |
-| ROBOTPKG_PYTHON_VERSION=py27 | ROBOTPKG_PYTHON_VERSION=py35 | ROBOTPKG_PYTHON_VERSION=py38 |
-| PIP_PREFIX = pip             | PIP_PREFIX = pip3            | PIP_PREFIX = pip3            |
-| ROS_VERSION = kinetic        | ROS_VERSION = bionic         | ROS_VERSION = noetic         |
+| Ubuntu 18:                   | **Ubuntu 20**:               |
+| ---------------------------- | ---------------------------- |
+| PYTHON_VERSION = 3.5         | PYTHON_VERSION = 3.8         |
+| ROBOTPKG_PYTHON_VERSION=py35 | ROBOTPKG_PYTHON_VERSION=py38 |
+| PIP_PREFIX = pip3            | PIP_PREFIX = pip3            |
+| ROS_VERSION = bionic         | ROS_VERSION = noetic         |
 
-**NOTE:** ROS is no longer supported on Ubuntu 22 (only ROS2) hence is not possible to install Locosim on Ubuntu 22.
+
 
 ### Install ROS 
 
@@ -157,38 +153,46 @@ sudo apt-get install ros-ROS_VERSION-LIBNAME
 ###  Python
 
 ```
-sudo apt-get install PYTHON_PREFIX-scipy
+sudo apt-get install python3-scipy
 ```
 
 ```
-sudo apt-get install PYTHON_PREFIX-matplotlib
+sudo apt-get install python3-matplotlib
 ```
 
 ```
-sudo apt-get install PYTHON_PREFIX-termcolor
+sudo apt-get install python3-termcolor
 ```
 
 ```
-sudo apt install Python3-pip
+sudo apt install python3-pip
+```
+
+```
+sudo pip install numpy==1.17.4
+```
+
+```
+sudo pip install joblib==1.2.0
+```
+
+```
+sudo pip install torch==2.0.0
+```
+
+```
+sudo pip install torchvision==0.15.1
+```
+
+```
+sudo pip install tensorboard==2.11.0
+```
+
+```
+sudo pip install torch==2.0.0
 ```
 
 
-
-
-
-
-
-numpy==1.17.4
-
-joblib==1.2.0
-
-torch==2.0.0
-
-torchvision==0.15.1
-
-tensorboard==2.11.0
-
-change LOCOSIMDIR to jumpleg_rl
 
 ### Download code and setup ROS workspace
 
@@ -223,7 +227,7 @@ cd ~/ros_ws/
 Now you can clone the repository inside the ROS workspace you just created:
 
 ```
-git clone https://github.com/mfocchi/climbing_robots.git
+git clone https://github.com/mfocchi/jump_rl.git
 ```
 
 now recompile again (then this step won't bee needed anymore if you just work in Python unless you do not modify / create additional ROS packages)
@@ -260,8 +264,8 @@ copy the following lines (at the end of the .bashrc), remember to replace the st
 source /opt/ros/ROS_VERSION/setup.bash
 source $HOME/ros_ws/install/setup.bash
 export PATH=/opt/openrobots/bin:$PATH
-export LOCOSIM_DIR=$HOME/ros_ws/src/reactive_landing_controller
-export PYTHONPATH=/opt/openrobots/lib/PythonPYTHON_VERSION/site-packages:$PYTHONPATH
+export LOCOSIM_DIR=$HOME/ros_ws/src/jump_rl
+export PYTHONPATH=/opt/openrobots/lib/pythonPYTHON_VERSION/site-packages:$PYTHONPATH
 export PYTHONPATH=$LOCOSIM_DIR/robot_control:$PYTHONPATH
 export PYTHONPATH=$LOCOSIM_DIR/landing_controller:$PYTHONPATH
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/opt/openrobots/share/
@@ -269,7 +273,7 @@ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/opt/openrobots/share/
 
 The .bashrc is a file that is **automatically** sourced whenever you open a new terminal.
 
-**NOTE**: people with some operating systems like ARCH LINUX, might need to add "export ROS_IP=127.0.0.1" to the .bashrc.
+
 
 #### Compile/Install the code
 

@@ -64,7 +64,7 @@ class JumplegAgentTorque:
         self.state_dim = 49
         self.action_dim = 3
 
-        self.N = 100
+        self.training_interval = 100
 
         # Action limitations
         self.max_q = np.array([np.pi/2, np.pi/2, np.pi/2])
@@ -84,18 +84,18 @@ class JumplegAgentTorque:
         self.policy = TD3(self.log_writer, self.state_dim,
                           self.action_dim, self.layer_dim)
 
-        self.batch_size = 256
+        self.batch_size = 512
         self.exploration_noise = 0.3
 
         self.n_curriculum_episode = 2500
         self.max_episode_target = 20
         self.curriculum_step = 0.5 / (self.n_curriculum_episode/self.max_episode_target)
         self.target_episode_counter = 0
-        self.real_episode_counter = 0
+        self.episode_counter = 0
         self.iteration_counter = 0
         self.net_iteration_counter = 0
 
-        self.random_episode = self.N*100
+        self.random_steps = 10000
 
         self.test_points = []
         self.rb_dump_it = 100 if self.mode == 'train' else 10
@@ -116,9 +116,7 @@ class JumplegAgentTorque:
 
             if self.restore_train:
 
-                # TODO: this iteration is wrong
-                self.net_iteration_counter = self.iteration_counter - self.random_episode
-
+                self.net_iteration_counter = self.iteration_counter - self.random_steps
                 # chech if TD3 was already trained
                 if self.net_iteration_counter > 0:
                     self.policy.load(
@@ -151,10 +149,6 @@ class JumplegAgentTorque:
         self.exp_z = [0.25, self.curr_learning*0.5]
         self.exp_r = [0., self.curr_learning*0.65]
 
-        print(self.exp_z)
-        print(self.exp_r)
-        print(self.curr_learning)
-
         rho = np.random.uniform(self.exp_rho[0], self.exp_rho[1])
         z = np.random.uniform(self.exp_z[0], self.exp_z[1])
         r = np.random.uniform(self.exp_r[0], self.exp_r[1])
@@ -178,8 +172,8 @@ class JumplegAgentTorque:
             self.targetCoM = self.generate_target()
 
         elif self.mode == 'test':
-            if self.real_episode_counter < self.test_points.shape[0]:
-                self.targetCoM = self.test_points[self.real_episode_counter]
+            if self.episode_counter < self.test_points.shape[0]:
+                self.targetCoM = self.test_points[self.episode_counter]
             else:  # send stop signal
                 self.targetCoM = [0, 0, -1]
                 self.replayBuffer.dump(
@@ -197,8 +191,6 @@ class JumplegAgentTorque:
     def get_action_handler(self, req):
         # print('ACTION HANDLER')
         state = np.array(req.state)
-        self.episode_transition['state'] = state
-        # print(self.episode_transition['state'])
 
         if self.mode == 'inference' or self.mode == 'test':
             # Get action from policy
@@ -206,7 +198,7 @@ class JumplegAgentTorque:
 
         elif self.mode == 'train':
             # Check if we have enought iteration to start the training
-            if self.iteration_counter >= self.random_episode:
+            if self.iteration_counter >= self.random_steps:
                 # print("STARTED WITH GAUSSIAN", self.iteration_counter)
                 # Get action from policy and apply exploration noise
                 action = (
@@ -220,7 +212,6 @@ class JumplegAgentTorque:
                 # If we don't have enought iteration, genreate random action
                 action = np.random.uniform(-1, 1, self.action_dim)
 
-        self.episode_transition['action'] = action
         # print(self.episode_transition['action'])
         action = (action*self.max_q)  # .clip(-np.pi,np.pi)
         resp = get_actionResponse()
@@ -236,8 +227,8 @@ class JumplegAgentTorque:
         self.episode_transition['reward'] = np.array(req.reward)
         self.episode_transition['done'] = np.array(req.done)
 
-        if req.apex:  # overwrite action to be 0 after apex
-            self.episode_transition['action'] = np.array([0., 0., 0.])
+        self.episode_transition['state'] = np.array(req.state)
+        self.episode_transition['action'] = np.array(req.action)
 
         if req.done:
             self.log_writer.add_scalar(
@@ -265,6 +256,7 @@ class JumplegAgentTorque:
             rospy.loginfo(f"Episode transition:\n {self.episode_transition}")
         
         if self.mode == 'test':
+            # Save results only on the end of the episode (avoid buffer overflow and data loss)
             if req.done: 
                 self.replayBuffer.store(self.episode_transition['state'],
                                         self.episode_transition['action'],
@@ -282,20 +274,18 @@ class JumplegAgentTorque:
 
 
         if self.mode == 'train':
-            if self.iteration_counter > self.random_episode:
+            if self.iteration_counter > self.random_steps:
 
                 # If is time to update
-
-                if self.iteration_counter % self.N == 0:
-                    for i in range(self.N):
+                if self.iteration_counter % self.training_interval == 0:
+                    for _ in range(self.training_interval):
                         self.policy.train(self.replayBuffer, self.batch_size)
                         self.net_iteration_counter += 1
 
                 if req.done:
-
-                    # net_iteration_counter = self.iteration_counter - self.random_episode
-
-                    if (self.net_iteration_counter) % 5000 == 0:
+                    
+                    # Save weight each 10000 net iteration
+                    if (self.net_iteration_counter) % 10000 == 0:
 
                         rospy.loginfo(
                             f"Saving RL agent networks, epoch {self.net_iteration_counter}")
@@ -312,8 +302,8 @@ class JumplegAgentTorque:
 
             # episode is done only when done is 1
             self.target_episode_counter += 1
-            self.real_episode_counter += 1
-            print(self.iteration_counter, self.real_episode_counter)
+            self.episode_counter += 1
+            print(self.iteration_counter, self.episode_counter)
 
             if (self.iteration_counter + 1) % self.rb_dump_it == 0:
                 self.replayBuffer.dump(os.path.join(

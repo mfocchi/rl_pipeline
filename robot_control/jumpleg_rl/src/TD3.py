@@ -149,13 +149,13 @@ class TD3(object):
         self.total_it = iteration
         
         self.critic.load_state_dict(torch.load(
-            os.path.join(path, f"TD3_{name}_critic.pt")))
+            os.path.join(path, f"TD3_{name}_critic.pt"), map_location = self.device))
         self.critic_optimizer.load_state_dict(
-            torch.load(os.path.join(path, f"TD3_{name}_critic_optimizer.pt")))
+            torch.load(os.path.join(path, f"TD3_{name}_critic_optimizer.pt"), map_location = self.device))
         self.critic_target = copy.deepcopy(self.critic)
 
         self.actor.load_state_dict(torch.load(
-            os.path.join(path, f"TD3_{name}_actor.pt")))
+            os.path.join(path, f"TD3_{name}_actor.pt"), map_location = self.device))
         self.actor_optimizer.load_state_dict(
-            torch.load(os.path.join(path, f"TD3_{name}_actor_optimizer.pt")))
+            torch.load(os.path.join(path, f"TD3_{name}_actor_optimizer.pt"), map_location = self.device))
         self.actor_target = copy.deepcopy(self.actor)
