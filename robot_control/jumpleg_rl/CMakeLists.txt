@@ -164,7 +164,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   src/JumplegAgent.py
-  src/JumplegAgentTorque.py
+  src/JumplegAgentInstantPos.py
   src/ReplayBuffer.py
   src/Actor.py
   src/Critic.py

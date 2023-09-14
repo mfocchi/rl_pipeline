@@ -1,5 +1,7 @@
 float64[] next_state
 float64 reward
+float64[] state
+float64[] action
 bool done
 float64 target_cost
 float64 unilateral
@@ -9,6 +11,6 @@ float64 joint_range
 float64 joint_torques
 float64 no_touchdown
 float64 smoothness
-bool apex
+float64 straight
 ---
 float64 ack

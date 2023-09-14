@@ -104,7 +104,8 @@ class TD3(object):
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
 
-        # torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 5)
+        if self.double_critic:
+            torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 5)
         self.critic_optimizer.step()
 
         # Delayed policy updates
@@ -122,7 +123,8 @@ class TD3(object):
             # Optimize the actor
             self.actor_optimizer.zero_grad()
             actor_loss.backward()
-            # torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 5)
+            if self.double_critic:
+                torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 5)
             self.actor_optimizer.step()
 
             # Update the frozen target models

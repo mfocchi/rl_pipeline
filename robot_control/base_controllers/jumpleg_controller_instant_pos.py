@@ -25,6 +25,8 @@ from termcolor import colored
 from base_controllers.utils.common_functions import plotJoint, plotFrameLinear
 from numpy import nan
 import matplotlib.pyplot as plt
+from collections import deque
+import numpy.matlib
 
 import rospkg
 import rospy as ros
@@ -191,7 +193,7 @@ class JumpLegController(BaseControllerFixed):
 
         #  unilateral  friction   singularity   joint_range  joint_torques no_touchdown smoothness straight target
         self.cost.weights = np.array(
-            [1000., 0.1, 10., 0.01, 1000., 10, 0.1, 10, 1.])
+            [1000., 0.1, 10., 0.01, 1000., 10, 0.5, 10, 1.])
 
         self.mu = 0.8
 
@@ -216,13 +218,13 @@ class JumpLegController(BaseControllerFixed):
 
         self.set_state = ros.ServiceProxy(
             '/gazebo/set_model_state', SetModelState)
-        print("JumplegAgentTorque services ready")
+        print("JumplegAgentInstantPos services ready")
         self.action_service = ros.ServiceProxy(
-            'JumplegAgentTorque/get_action', get_action)
+            'JumplegAgentInstantPos/get_action', get_action)
         self.target_service = ros.ServiceProxy(
-            'JumplegAgentTorque/get_target', get_target)
+            'JumplegAgentInstantPos/get_target', get_target)
         self.reward_service = ros.ServiceProxy(
-            'JumplegAgentTorque/set_reward', set_reward_original)
+            'JumplegAgentInstantPos/set_reward', set_reward_original)
 
     def logData(self):
         if (self.log_counter < conf.robot_params[self.robot_name]['buffer_size']):
@@ -355,7 +357,7 @@ class JumpLegController(BaseControllerFixed):
     def loadRLAgent(self, mode='train', data_path=None, model_name='latest', restore_train=False):
         print(colored(f"Starting RLagent in  {mode} mode", "red"))
         package = 'jumpleg_rl'
-        executable = 'JumplegAgentTorque.py'
+        executable = 'JumplegAgentInstantPos.py'
         name = 'rlagent'
         namespace = '/'
         args = f'--mode {mode} --data_path {data_path} --model_name {model_name} --restore_train {restore_train}'
@@ -366,10 +368,10 @@ class JumpLegController(BaseControllerFixed):
         process = self.launch.launch(node)
 
         # wait for agent service to start
-        print("Waiting for JumplegAgentTorque services")
-        ros.wait_for_service('JumplegAgentTorque/get_action')
-        ros.wait_for_service('JumplegAgentTorque/get_target')
-        ros.wait_for_service('JumplegAgentTorque/set_reward')
+        print("Waiting for JumplegAgentInstantPos services")
+        ros.wait_for_service('JumplegAgentInstantPos/get_action')
+        ros.wait_for_service('JumplegAgentInstantPos/get_target')
+        ros.wait_for_service('JumplegAgentInstantPos/set_reward')
 
     def computeActivationFunction(self, activationType, value, lower, upper):
 
@@ -408,9 +410,9 @@ class JumpLegController(BaseControllerFixed):
         # smoothness
         c1 = 2.5
         c2 = 1.5
-        self.cost.smoothness += c1*(np.linalg.norm(self.old_q[0] - self.old_q[1])**2)+c2*(
-            np.linalg.norm(self.old_q[0] - 2*self.old_q[1] + self.old_q[2])**2)
-        
+        self.cost.smoothness += c1*(np.linalg.norm(self.old_action[0] - self.old_action[1])**2)+c2*(
+            np.linalg.norm(self.old_action[0] - 2*self.old_action[1] + self.old_action[2])**2)
+
         # straight
         x0, y0, _ = self.com
         x1, y1, _ = self.com_0
@@ -465,9 +467,9 @@ class JumpLegController(BaseControllerFixed):
 
         if done != -1:
 
-            msg.next_state = np.concatenate((self.com, self.q[3:]/np.pi, self.qd[3:]/20.,  self.target_CoM, [np.linalg.norm(
-                [p.com-p.target_CoM])], self.old_q.flatten()/np.pi, self.old_qd.flatten()/20., self.old_action.flatten()/(np.pi/2), self.old_com.flatten()))
-            
+            msg.next_state = np.concatenate((self.com, self.comd, self.q[3:]/np.pi, self.qd[3:]/20.,  self.target_CoM,
+                                            [np.linalg.norm([self.com-self.target_CoM])], np.array(self.old_action).flatten()/(np.pi/2)))
+
             # print(self.total_reward)
             msg.reward = self.total_reward
             # msg.reward = reward
@@ -560,13 +562,13 @@ def talker(p):
         # ros.sleep(0.3)
         p.time = 0.
         startTrust = 0
-        p.old_q = np.array(
-            [p.q_des_q0[3:].copy(), p.q_des_q0[3:].copy(), p.q_des_q0[3:].copy()])
-        p.old_qd = np.zeros((3, 3))
-        p.old_action = np.zeros((3, 3))
-        p.old_com = np.array([p.com_0, p.com_0, p.com_0])
         n_old_state = 3
-        state_index = 0
+        # p.old_q = deque(np.matlib.repmat(
+        # p.q_des_q0[3:].copy(), n_old_state, 1))
+        # p.old_qd = deque(np.zeros((n_old_state, 3)))
+        p.old_action = deque(np.zeros((n_old_state, 3)))
+        # p.old_com = deque(np.matlib.repmat(p.com_0, n_old_state, 1))
+
         max_episode_time = 2
         p.total_reward = 0
         p.number_of_episode += 1
@@ -578,7 +580,6 @@ def talker(p):
         p.trustPhaseFlag = False
         p.comd_lo = np.zeros(3)
         p.target_CoM = np.array(p.target_service().target_CoM)
-        
 
         # if p.DEBUG:  # overwrite target
         #     p.target_CoM = np.array([0.3, 0, 0.25])
@@ -617,18 +618,13 @@ def talker(p):
                 # check freq
 
                 if p.freq_counter == 0:
-                    
-                    # update old state
-                    p.old_q[state_index] = p.q[3:].copy()
-                    p.old_qd[state_index] = p.qd[3:].copy()
-                    p.old_action[state_index] = p.action.copy()
-                    p.old_com[state_index] = p.com.copy()
-                    state_index = (state_index + 1) % n_old_state
 
                     # Ask for torque value
-                    p.state = np.concatenate((p.com, p.q[3:]/np.pi, p.qd[3:]/20.,  p.target_CoM, [np.linalg.norm(
-                        [p.com-p.target_CoM])], p.old_q.flatten()/np.pi, p.old_qd.flatten()/20., p.old_action.flatten()/(np.pi/2), p.old_com.flatten()))
-                    
+                    p.state = np.concatenate((p.com, p.comd, p.q[3:]/np.pi, p.qd[3:]/20.,  p.target_CoM,
+                                              [np.linalg.norm([p.com-p.target_CoM])], np.array(p.old_action).flatten()/(np.pi/2)))
+
+                    # print(p.state)
+
                     if any(np.isnan(p.state)):
                         print(f"Agent state:\n {p.state}\n")
                         print(colored('NAN IN STATE!!!', 'red'))
@@ -642,9 +638,20 @@ def talker(p):
                     # print(f"Actor action with torques:\n {action}\n")
                     if any(np.isnan(p.action)):
                         print(f"Agent state:\n {p.state}\n")
-                        print(f"Actor action with des positions:\n {p.action}\n")
+                        print(
+                            f"Actor action with des positions:\n {p.action}\n")
                         print(colored('NAN IN ACTION!!!', 'red'))
                         quit()
+
+                    # update queue
+                    # p.old_q.pop()
+                    # p.old_q.appendleft(p.q[3:].copy())
+                    # p.old_qd.pop()
+                    # p.old_qd.appendleft(p.qd[3:].copy())
+                    p.old_action.pop()
+                    p.old_action.appendleft(p.action.copy())
+                    # p.old_com.pop()
+                    # p.old_com.appendleft(p.com.copy())
 
                 # Apply action
                 p.q_des[3:] = p.q_des_q0[3:] + p.action
