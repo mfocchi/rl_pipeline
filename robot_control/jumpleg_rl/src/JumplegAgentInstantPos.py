@@ -16,10 +16,10 @@ from std_msgs.msg import Float32
 from torch.utils.tensorboard import SummaryWriter
 
 
-class JumplegAgentTorque:
+class JumplegAgentInstantPos:
     def __init__(self, _mode, _data_path, _model_name, _restore_train):
 
-        self.node_name = "JumplegAgentTorque"
+        self.node_name = "JumplegAgentInstantPos"
 
         self.mode = _mode
         self.data_path = _data_path
@@ -61,7 +61,7 @@ class JumplegAgentTorque:
         self.log_writer = SummaryWriter(
             os.path.join(self.main_folder, 'logs'))
 
-        self.state_dim = 49
+        self.state_dim = 25
         self.action_dim = 3
 
         self.training_interval = 100
@@ -85,10 +85,12 @@ class JumplegAgentTorque:
                           self.action_dim, self.layer_dim)
 
         self.batch_size = 512
+        self.max_episode_target = 20
+        self.n_expl_reduction_episode = 20000
+        self.n_expl_reduction = 0.2 / (self.n_expl_reduction_episode/self.max_episode_target)
         self.exploration_noise = 0.3
 
         self.n_curriculum_episode = 2500
-        self.max_episode_target = 20
         self.curriculum_step = 0.5 / (self.n_curriculum_episode/self.max_episode_target)
         self.target_episode_counter = 0
         self.episode_counter = 0
@@ -159,8 +161,13 @@ class JumplegAgentTorque:
         if self.curr_learning > 1:
             self.curr_learning = 1
         else:
-            
             self.curr_learning += self.curriculum_step
+
+        # Update exploartion noise while lower bound isn't reached
+        if self.exploration_noise < 0.1:
+            self.exploration_noise = 0.1
+        else:
+            self.exploration_noise -= self.n_expl_reduction
 
         return [-x, y, z]
 
@@ -230,30 +237,32 @@ class JumplegAgentTorque:
         self.episode_transition['state'] = np.array(req.state)
         self.episode_transition['action'] = np.array(req.action)
 
+
+        self.log_writer.add_scalar(
+            'Reward', req.reward, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Target Cost(Distance)', req.target_cost, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Unilateral', req.unilateral, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Friction', req.friction, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Singularity', req.singularity, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Joint range', req.joint_range, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Joint torque', req.joint_torques, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'No touchdown', req.no_touchdown, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Smoothness', req.smoothness, self.iteration_counter)
+        self.log_writer.add_scalar(
+            'Straight', req.straight, self.iteration_counter)
+        
         if req.done:
-            self.log_writer.add_scalar(
-                'Reward', req.reward, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Target Cost(Distance)', req.target_cost, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Unilateral', req.unilateral, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Friction', req.friction, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Singularity', req.singularity, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Joint range', req.joint_range, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Joint torque', req.joint_torques, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'No touchdown', req.no_touchdown, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Smoothness', req.smoothness, self.iteration_counter)
-            self.log_writer.add_scalar(
-                'Straight', req.straight, self.iteration_counter)
             rospy.loginfo(
                 f"Reward[it {self.iteration_counter}]: {self.episode_transition['reward']}")
-            rospy.loginfo(f"Episode transition:\n {self.episode_transition}")
+
         
         if self.mode == 'test':
             # Save results only on the end of the episode (avoid buffer overflow and data loss)
@@ -336,5 +345,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args(rospy.myargv()[1:])
 
-    jumplegAgentTorque = JumplegAgentTorque(
+    jumplegAgentTorque = JumplegAgentInstantPos(
         args.mode, args.data_path, args.model_name, args.restore_train)

@@ -1,0 +1,95 @@
+# jump on horizontal terrain
+robot: jumpleg
+type: jumpOnHorizontalTerrain
+timeStep:    0.001 # [s]
+launchingT:  0.3 # [s]  contact times
+landedT:     0.6 # [s]
+jumpHeight: .1
+jumpLength: [ 0.3, 0.0, 0.05 ]
+finalYaw: 0. # [rad]
+rpySurf:
+  lf: [0., 0., 0.]
+mu: 0.8
+weights:
+  thrustingPhase: # both thrusting and landed
+    BaumgarteGains: [0., 50.]
+    frictionCone: 1.
+    footPlacement: 10 # used only after touch down
+    footVelocity: 1 # used only after touch down
+    basePlacementDirectionPenalty: [0., 0., 0., 1., 1., 1.]
+    basePlacement: 0
+    # weights ar in vel acc
+    statePenalty: [  0., 0., 0.,
+                    2.0, 0.3, 0.3,
+                  0., 0., 0.,
+                  2.0, 0.3, 0.3]
+    stateRegularization: 0.0
+    stateBounds: 100
+    actuationRegularization: 1.0
+    actuationBounds: 100
+  flyingPhase:
+    com: 5
+    basePlacementDirectionPenalty: [0., 0., 0., 1., 1., 1.] # no control on linear position com
+    baseYaw: 0
+    footPlacement: 10
+    # weights ar in vel acc
+    statePenalty: [  0., 0., 0.,
+                    2.0, 0.3, 0.3,
+                  0., 0., 0.,
+                  2.0, 0.3, 0.3]
+    stateRegularization: 0.0
+    stateBounds: 1000
+    actuationRegularization: 0.1
+    actuationBounds: 1000
+
+
+  landingPhase:
+#    type: pseudoimpulse
+#    BaumgarteGains: [ 0., 50. ]
+#    frictionCone: 10
+#    footPlacement: 100000
+#    footVelocity: 1000000
+#    stateScale: [ 0., 0., 0.
+#                  2.0, 0.3, 0.3,
+#                  0., 0., 0.,
+#                  2.0, 0.3, 0.3 ]
+#    stateRegularization: 10
+#    stateBounds: 1000
+#    actuationRegularization: 0.1
+#    actuationBounds: 1000
+
+    type: impulse
+    frictionCone: 1
+    footPlacement: 100
+    footVelocity: 10
+    statePenalty: [ 1.,  1,  1,
+                    10, 10, 10,
+                    1.,  1,  1,
+                    10, 10, 10 ]
+    stateRegularization: 0.0
+
+  landedPhase:
+    BaumgarteGains: [ 0., 50. ]
+    frictionCone: 1.
+    footPlacement: 100 # used only after touch down
+    footVelocity: 1 # used only after touch down
+    basePlacementDirectionPenalty: [ 0., 0., 0., 1., 1., 1. ]
+    basePlacement: 0
+    com: 100
+    # weights ar in vel acc
+    statePenalty: [ 0., 0., 0.,
+                    0.0, 0.0, 0.0,
+                    0., 0., 0.,
+                    0.3, 0.3, 0.3 ]
+    stateRegularization: 0.1
+    stateBounds: 1000
+    actuationRegularization: 0.1
+    actuationBounds: 1000
+
+
+integrator: euler # rk2, rk3, rk4, euler(default)
+solver: FDDP # DDP, FDDP, BoxDDP(inequality), BoxFDDP (inequality)
+callbacks:
+  logger: True
+  verbose: True
+

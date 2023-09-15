@@ -128,7 +128,11 @@ You need to run at least once apt update to fetch the package descriptions:
 sudo apt-get update
 ```
 
-Now you can install Pinocchio and the required libraries:
+Now you can install Pinocchio and the other dependencies:
+
+```
+sudo apt install robotpkg-PINOCCHIO_PYTHON_VERSION-crocoddyl
+```
 
 ```
 sudo apt install robotpkg-PINOCCHIO_PYTHON_VERSION-eigenpy	
