@@ -66,7 +66,6 @@ def plotOptimization(p, ddp):
     time_log = np.empty((knot_number_xs)) * np.nan
     time = 0
     for i in range(knot_number_xs-10):
-        print(i)
         q_des = ddp.xs[i][:6]
         p.w_base_log[:,i] = ddp.xs[i][:3]
         p.w_x_ee_log[:, i] = p.robot.framePlacement(q_des, p.robot.model.getFrameId(conf.robot_params[p.robot_name]['ee_frame'])).translation

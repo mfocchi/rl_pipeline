@@ -270,9 +270,12 @@ source $HOME/ros_ws/install/setup.bash
 export PATH=/opt/openrobots/bin:$PATH
 export LOCOSIM_DIR=$HOME/ros_ws/src/rl_pipeline
 export PYTHONPATH=/opt/openrobots/lib/pythonPYTHON_VERSION/site-packages:$PYTHONPATH
-export PYTHONPATH=$LOCOSIM_DIR/robot_control:$PYTHONPATH
-export PYTHONPATH=$LOCOSIM_DIR/landing_controller:$PYTHONPATH
+export PYSOLO_FROSCIA=$LOCOSIM_DIR/fddp_optimization
+export PYTHONPATH=$LOCOSIM_DIR/robot_control:$PYSOLO_FROSCIA:$PYTHONPATH
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/opt/openrobots/share/
+export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
+export CMAKE_PREFIX_PATH=/opt/openrobots:$CMAKE_PREFIX_PATH
 ```
 
 The .bashrc is a file that is **automatically** sourced whenever you open a new terminal.
