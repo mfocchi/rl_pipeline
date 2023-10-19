@@ -14,7 +14,7 @@ https://github.com/sfujim/TD3
 |min_phi | pi/4|
 |min_phi_d | pi/6|
 
-# Domain of targetCoM
+# Domain of train targetCoM
 |Parameter| Value|
 |--------|--------|
 |exp_rho | [-pi, pi]|
@@ -25,4 +25,4 @@ https://github.com/sfujim/TD3
 |Parameter| Value|
 |--------|--------|
 |layer_dim | 256 |
-|lr | 5e-4|
+|lr | 1e-4|
