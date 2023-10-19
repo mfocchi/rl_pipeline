@@ -95,7 +95,7 @@ class Cost():
 
 class JumpLegController(BaseControllerFixed):
 
-    def __init__(self, robot_name="ur5"):
+    def __init__(self, robot_name="jumpleg"):
         super().__init__(robot_name=robot_name)
         self.agentMode = 'inference'
         self.restoreTrain = False

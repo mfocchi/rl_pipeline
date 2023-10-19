@@ -1,0 +1,3 @@
+*__pycache__
+robot_urdf
+robot_control/jumpleg_rl/runs*
