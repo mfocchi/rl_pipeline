@@ -15,9 +15,7 @@ time, and the ability to learn and compensate for possible errors in the low-lev
 Check out our Youtube [video](https://www.youtube.com/watch?v=ARhoYwIrkU0).
 
 
-
-
-## Install Locosim
+## Installing Locosim
 
 Locosim is composed by a **roscontrol** node called **ros_impedance_controller** (written in C++) that interfaces the 
 Python ros node (where the controller is written) to a Gazebo simulator.
@@ -304,61 +302,6 @@ source .bashrc
 
 
 
-### **Running the software** from Python IDE: Pycharm  
-
-We recommend to use an IDE to run and edit the Python files, like Pycharm community. To install it,  you just need to download and unzip the program:
-
-https://download.jetbrains.com/Python/pycharm-community-2021.1.1.tar.gz
-
- and unzip it  *inside* the home directory. 
-
-We ask you to download this specific version (2021.1.1) that we am sure it works: newer versions seem to be failing to load environment variables. 
-
-To be able to keep the plots **alive** at the end of the program and to have access to variables,  you need to "Edit Configurations..." and tick "Run with Python Console". Otherwise the plot will immediately close. 
-
-
-
-### Running the Software from terminal
-
-To run from a terminal we  use the interactive option that allows  when you close the program have access to variables:
-
-``` bash
-python3 -i $LOCOSIM_DIR/robot_control/base_controllers/jumpleg_controller.py 
-```
-
-to exit from Python3 console type CTRL+Z
-
-
-
-### Tips and Tricks 
-
-1) Some machines, do not have support for GPU. This means that if you run Gazebo Graphical User Interface (GUI) it can become very **slow**. A way to mitigate this is to avoid to start the  Gazebo GUI and only start the gzserver process that will compute the dynamics, you will keep the visualization in Rviz. This is referred to planners that employ BaseController or BaseControllerFixed classes. In the Python code where you start the simulator you need to pass this additional argument as follows:
-
-```python
-additional_args = 'gui:=false'
-p.startSimulator(..., additional_args =additional_args)
-```
-
-2) Another annoying point is the default timeout to kill Gazebo that is by default very long. You can change it (e.g. to 0.1s) by setting the  _TIMEOUT_SIGINT = 0.1 and _TIMEOUT_SIGTERM = 0.1:
-
-```bash
-sudo gedit /opt/ros/ROS_VERSION/lib/PYTHON_PREFIX/dist-packages/roslaunch/nodeprocess.py
-```
-
- this will cause ROS to send a `kill` signal much sooner.
-
-3) if you get this annoying warning: 
-
-```
-Warning: TF_REPEATED_DATA ignoring data with redundant timestamp for frame...
-```
-
-a dirty hack to fix it is to clone this repository in your workspace:
-
-```bash
-git clone --branch throttle-tf-repeated-data-error git@github.com:BadgerTechnologies/geometry2.git
-```
-
 ## Code usage	
 
 The repository contains the implementation of the three approaches presented in the paper: Guided reinforcement learning (GRL), End-to-end reinforcement learning (E2E), and FDDP-based nonlinear trajectory optimization. Both the GRL and the E2E solutions can execute the RL agent in three different modes:
@@ -390,7 +333,7 @@ class JumpLegController(BaseControllerFixed):
         ...
 ```
 PARAMETERS:
-- **agentMode**(`str`): RL agent mode,  {"train", "test", "inference"}
+- **agentMode**(`str`): RL agent mode,  {"train", "test", "inference"}:  Set it to 'train' to train the NN. The NN weights will be updated and stored in a local folder (robot_control/jumpleg_rl/runs). To evaluate the NN on the test set (test region) set it to 'test', set it to 'inference' for random targets evaluation.
 - **restoreTrain**(`bool`): Allows to restore training from a saved run
 - **gui**(`bool`): Enable/Disable the launch of Gazebo view
 - **model_name**(`str`): Specify the model's weight name to load in the rl agent  
@@ -435,6 +378,14 @@ tensorboard --logdir runs_joints/train/logs/
 ```
 
 ### FDDP
+
+To run the FDDP optimization, run the script:
+
+``` bash
+python3 -i $LOCOSIM_DIR/fddp_optimization/scripts/simple_task_monopod.py 
+```
+
+This will solve the optimal control problem for all the point in **test_points.txt** and generate a file **test_optim.csv** that contains: target, error, landing position, computation time.
 
 ## Plots
 You can find all the plots present in the video and the paper in the [plots folder](/robot_control/jumpleg_rl/utils/plots/)
